@@ -1,7 +1,8 @@
 /**
  * ====================================================================
- * CAPTION GENERATOR — DOM, EVENT HANDLING, & AUTO-POPULATE
+ * CAPTION GENERATOR — DOM, EVENT HANDLING, & TEMPLATES
  * ====================================================================
+ * Mengadopsi arsitektur template & validasi terstruktur (PAW-ANTARA-WEEK5)
  * Mahasiswa : Haidar Yahya Mudhofar
  * NIM       : 20240140093
  * Kelas     : B
@@ -11,16 +12,18 @@
 document.addEventListener('DOMContentLoaded', () => {
   'use strict';
 
-  // Selektor Form
+  // Selektor Form & Input
   const captionForm = document.getElementById('caption-form');
   const productNameInput = document.getElementById('product-name');
   const productCategoryInput = document.getElementById('product-category');
   const productPriceInput = document.getElementById('product-price');
+  const templateSelect = document.getElementById('template-select');
   const productDescInput = document.getElementById('product-desc');
 
   // Error & Feedback Elements
   const nameError = document.getElementById('name-error');
   const categoryError = document.getElementById('category-error');
+  const priceError = document.getElementById('price-error');
   const descError = document.getElementById('desc-error');
   const formFeedback = document.getElementById('form-feedback');
 
@@ -33,24 +36,208 @@ document.addEventListener('DOMContentLoaded', () => {
   const clearSelectedBtn = document.getElementById('clear-selected-btn');
 
   // Output Elements
+  const resultSection = document.getElementById('result-section');
   const emptyResult = document.getElementById('empty-result');
   const resultBox = document.getElementById('result-box');
   const resultText = document.getElementById('result-text');
+  const resultStatus = document.getElementById('result-status');
   const copyBtn = document.getElementById('copy-btn');
   const copyMsg = document.getElementById('copy-msg');
   const sampleBtn = document.getElementById('sample-btn');
 
   /**
-   * Menampilkan pesan error validasi pada field
+   * Pembuat Hashtag Otomatis (PascalCase)
+   * Contoh: "kopi susu aren" -> "KopiSusuAren"
    */
-  function setFieldError(inputEl, errorEl, msg) {
-    if (msg) {
+  function generateHashtag(text) {
+    if (!text) return '';
+    return text
+      .replace(/[^\p{L}\p{N}\s]/gu, '')
+      .trim()
+      .split(/\s+/)
+      .filter(Boolean)
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join('');
+  }
+
+  /**
+   * Format Nominal Harga (Rupiah / USD)
+   */
+  function formatPrice(val) {
+    if (!val) return '';
+    const trimmed = String(val).trim();
+    if (trimmed.startsWith('$')) return trimmed;
+
+    const rawNum = parseFloat(trimmed.replace(/[^\d.]/g, ''));
+    if (isNaN(rawNum)) return trimmed;
+
+    // Jika bernilai ratusan/ribuan atau ada indikasi rupiah
+    if (rawNum >= 1000 || trimmed.toLowerCase().includes('rp')) {
+      return new Intl.NumberFormat('id-ID', {
+        style: 'currency',
+        currency: 'IDR',
+        maximumFractionDigits: 0,
+      }).format(rawNum);
+    }
+
+    // Default USD untuk data desimal DummyJSON
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 2,
+    }).format(rawNum);
+  }
+
+  /**
+   * Koleksi Template Caption Produk (Promo, Santai, Formal)
+   * Mengikuti referensi PAW-ANTARA-WEEK5 tanpa emoji & tanpa AI-slop.
+   */
+  const templates = {
+    promo: (nama, harga, kategori, desc, tag, catTag) => {
+      const formattedPrice = formatPrice(harga);
+      const descLine = desc ? `\nDeskripsi Produk:\n${desc}\n` : '';
+      const catLine = kategori ? `Kategori: ${kategori}\n` : '';
+
+      return [
+        `PENAWARAN SPESIAL: ${nama.toUpperCase()}`,
+        catLine + `Harga Promo: ${formattedPrice}`,
+        descLine,
+        `Keunggulan Pembelian:`,
+        `• Kualitas produk terjamin dan melalui seleksi mutu`,
+        `• Stok terbatas, manfaatkan kesempatan sebelum penawaran berakhir`,
+        `• Layanan pengiriman cepat dan bergaransi aman`,
+        ``,
+        `Segera hubungi kontak kami untuk konfirmasi dan proses pemesanan.`,
+        ``,
+        `#Promo #${tag} ${catTag ? '#' + catTag + ' ' : ''}#DiskonSpesial #BelanjaHemat`
+      ].filter(Boolean).join('\n');
+    },
+
+    santai: (nama, harga, kategori, desc, tag, catTag) => {
+      const formattedPrice = formatPrice(harga);
+      const descLine = desc ? `\nSekilas tentang produk ini:\n${desc}\n` : '';
+      const catLine = kategori ? `Kategori: ${kategori}\n` : '';
+
+      return [
+        `Sedang mencari ${nama}?`,
+        catLine + `Bisa kamu dapatkan dengan harga ${formattedPrice}.`,
+        descLine,
+        `Pilihan praktis yang pas untuk melengkapi aktivitas harian kamu. Kualitas memuaskan dengan harga yang bersahabat.`,
+        ``,
+        `Mau tanya ketersediaan stok atau konsultasi dulu? Langsung kirim pesan, kami siap melayani.`,
+        ``,
+        `#${tag} ${catTag ? '#' + catTag + ' ' : ''}#RekomendasiProduk #PilihanHarian #BelanjaPraktis`
+      ].filter(Boolean).join('\n');
+    },
+
+    formal: (nama, harga, kategori, desc, tag, catTag) => {
+      const formattedPrice = formatPrice(harga);
+      const descLine = desc ? `\nSpesifikasi dan Keterangan Produk:\n${desc}\n` : '';
+      const catLine = kategori ? `Klasifikasi: ${kategori}\n` : '';
+
+      return [
+        `INFORMASI RESMI PRODUK: ${nama.toUpperCase()}`,
+        catLine + `Harga Terdaftar: ${formattedPrice}`,
+        descLine,
+        `Standar Pelayanan:`,
+        `1. Produk telah melalui proses verifikasi dan kontrol mutu resmi`,
+        `2. Pelayanan pelanggan profesional dan responsif`,
+        `3. Transaksi aman dengan pengiriman terstandarisasi`,
+        ``,
+        `Untuk informasi lebih lanjut, penawaran resmi, atau pemesanan dalam jumlah tertentu, silakan menghubungi narahubung resmi kami.`,
+        ``,
+        `#${tag} ${catTag ? '#' + catTag + ' ' : ''}#ProdukResmi #Katalog #StandarMutu`
+      ].filter(Boolean).join('\n');
+    }
+  };
+
+  /**
+   * Aturan Validasi Form Terstruktur
+   */
+  const rules = {
+    'product-name': (val) => {
+      const v = val.trim();
+      if (!v) return 'Nama produk wajib diisi.';
+      if (v.length < 3) return `Nama produk minimal 3 karakter (sekarang ${v.length}).`;
+      if (v.length > 60) return `Nama produk maksimal 60 karakter (sekarang ${v.length}).`;
+      if (!/\p{L}/u.test(v)) return 'Nama produk harus mengandung huruf.';
+      return '';
+    },
+    'product-category': (val) => {
+      const v = val.trim();
+      if (!v) return 'Kategori produk wajib diisi.';
+      if (v.length < 2) return 'Kategori minimal 2 karakter.';
+      return '';
+    },
+    'product-price': (val) => {
+      const v = val.trim();
+      if (!v) return 'Harga produk wajib diisi.';
+      const cleanNum = parseFloat(v.replace(/[^\d.]/g, ''));
+      if (isNaN(cleanNum) || cleanNum <= 0) {
+        return 'Format harga tidak valid (masukkan angka nominal).';
+      }
+      return '';
+    },
+    'product-desc': (val) => {
+      const v = val.trim();
+      if (!v) return 'Deskripsi produk wajib diisi.';
+      if (v.length < 10) return `Deskripsi minimal 10 karakter (sekarang ${v.length}).`;
+      return '';
+    }
+  };
+
+  const errorElements = {
+    'product-name': nameError,
+    'product-category': categoryError,
+    'product-price': priceError,
+    'product-desc': descError,
+  };
+
+  /**
+   * Validasi satu elemen input
+   */
+  function validateField(id) {
+    const inputEl = document.getElementById(id);
+    const errorEl = errorElements[id];
+    if (!inputEl || !rules[id]) return true;
+
+    const errorMsg = rules[id](inputEl.value);
+
+    if (errorMsg) {
       inputEl.classList.add('border-red-500', 'bg-red-50/70');
-      errorEl.textContent = msg;
+      inputEl.setAttribute('aria-invalid', 'true');
+      if (errorEl) errorEl.textContent = errorMsg;
+      return false;
     } else {
       inputEl.classList.remove('border-red-500', 'bg-red-50/70');
-      errorEl.textContent = '';
+      inputEl.setAttribute('aria-invalid', 'false');
+      if (errorEl) errorEl.textContent = '';
+      return true;
     }
+  }
+
+  function validateAll() {
+    let isValid = true;
+    let firstInvalidInput = null;
+
+    Object.keys(rules).forEach((id) => {
+      const passed = validateField(id);
+      if (!passed) {
+        isValid = false;
+        if (!firstInvalidInput) {
+          firstInvalidInput = document.getElementById(id);
+        }
+      }
+    });
+
+    if (!isValid) {
+      showBanner('Harap periksa kembali isian formulir yang ditandai merah.', false);
+      if (firstInvalidInput) firstInvalidInput.focus();
+    } else {
+      hideBanner();
+    }
+
+    return isValid;
   }
 
   function showBanner(msg, isSuccess = true) {
@@ -69,114 +256,65 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   /**
-   * Validasi Input
+   * Render Hasil Caption
    */
-  function validateForm() {
-    let isValid = true;
-    const nameVal = productNameInput.value.trim();
-    const catVal = productCategoryInput.value.trim();
-    const descVal = productDescInput.value.trim();
-
-    if (nameVal.length < 3) {
-      setFieldError(productNameInput, nameError, 'Nama produk minimal 3 karakter.');
-      isValid = false;
-    } else {
-      setFieldError(productNameInput, nameError, '');
-    }
-
-    if (catVal.length < 2) {
-      setFieldError(productCategoryInput, categoryError, 'Kategori produk wajib diisi.');
-      isValid = false;
-    } else {
-      setFieldError(productCategoryInput, categoryError, '');
-    }
-
-    if (descVal.length < 10) {
-      setFieldError(productDescInput, descError, 'Deskripsi produk minimal 10 karakter.');
-      isValid = false;
-    } else {
-      setFieldError(productDescInput, descError, '');
-    }
-
-    if (!isValid) {
-      showBanner('Harap lengkapi isian formulir yang ditandai merah.', false);
-    } else {
-      hideBanner();
-    }
-
-    return isValid;
-  }
-
-  /**
-   * Susun teks caption sederhana dan natural
-   */
-  function buildCaptionText(name, category, price, desc) {
-    const priceLine = price.trim() ? `Harga: ${price.trim()}` : '';
-
-    const lines = [
-      `CAPTION PRODUK: ${name.toUpperCase()}`,
-      `Kategori: ${category}`,
-      priceLine,
-      ``,
-      `Deskripsi Produk:`,
-      `${desc}`,
-      ``,
-      `Dapatkan penawaran terbaik untuk produk ini selagi persediaan masih tersedia. Hubungi layanan kami untuk konfirmasi pemesanan.`
-    ];
-
-    return lines.filter(line => line !== null && line !== undefined).join('\n');
-  }
-
-  /**
-   * Tampilkan hasil teks ke panel DOM
-   */
-  function renderResult(text) {
+  function renderResult(text, templateType) {
     emptyResult.classList.add('hidden');
     resultBox.classList.remove('hidden');
     resultText.textContent = text;
+    resultStatus.textContent = `Template: ${templateType.toUpperCase()}`;
+
+    // Auto-scroll pada layar mobile agar pengguna langsung melihat hasil
+    if (window.innerWidth < 1024 && resultSection) {
+      resultSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
   }
 
   /**
-   * Proses Submit
+   * Eksekusi Pembuatan Caption
    */
   function processForm() {
-    if (!validateForm()) return;
+    if (!validateAll()) return;
 
-    const name = productNameInput.value.trim();
-    const category = productCategoryInput.value.trim();
-    const price = productPriceInput.value.trim();
+    const nama = productNameInput.value.trim();
+    const kategori = productCategoryInput.value.trim();
+    const harga = productPriceInput.value.trim();
     const desc = productDescInput.value.trim();
+    const templateKey = templateSelect.value || 'promo';
 
-    const output = buildCaptionText(name, category, price, desc);
-    renderResult(output);
-    showBanner('Teks caption berhasil dibuat.', true);
+    const tag = generateHashtag(nama);
+    const catTag = generateHashtag(kategori);
+
+    const templateFn = templates[templateKey] || templates.promo;
+    const output = templateFn(nama, harga, kategori, desc, tag, catTag);
+
+    renderResult(output, templateKey);
+    showBanner(`Caption dengan template "${templateKey}" berhasil dibuat.`, true);
   }
 
+  // Event Listeners Input Real-Time
+  Object.keys(rules).forEach((id) => {
+    const inputEl = document.getElementById(id);
+    if (inputEl) {
+      inputEl.addEventListener('input', () => validateField(id));
+      inputEl.addEventListener('blur', () => validateField(id));
+    }
+  });
+
+  // Re-generate saat template diganti jika data sudah terisi
+  templateSelect.addEventListener('change', () => {
+    if (productNameInput.value.trim() && productCategoryInput.value.trim()) {
+      processForm();
+    }
+  });
+
+  // Submit Form
   captionForm.addEventListener('submit', (e) => {
     e.preventDefault();
     processForm();
   });
 
-  // Real-time error clearing
-  productNameInput.addEventListener('input', () => {
-    if (productNameInput.value.trim().length >= 3) {
-      setFieldError(productNameInput, nameError, '');
-    }
-  });
-
-  productCategoryInput.addEventListener('input', () => {
-    if (productCategoryInput.value.trim().length >= 2) {
-      setFieldError(productCategoryInput, categoryError, '');
-    }
-  });
-
-  productDescInput.addEventListener('input', () => {
-    if (productDescInput.value.trim().length >= 10) {
-      setFieldError(productDescInput, descError, '');
-    }
-  });
-
-  // Tombol Salin
+  // Salin Caption
   copyBtn.addEventListener('click', () => {
     const text = resultText.textContent;
     if (!text) return;
@@ -189,32 +327,37 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // Tombol Reset
+  // Reset Form
   captionForm.addEventListener('reset', () => {
     setTimeout(() => {
-      setFieldError(productNameInput, nameError, '');
-      setFieldError(productCategoryInput, categoryError, '');
-      setFieldError(productDescInput, descError, '');
+      Object.keys(rules).forEach((id) => {
+        const inputEl = document.getElementById(id);
+        const errorEl = errorElements[id];
+        if (inputEl) {
+          inputEl.classList.remove('border-red-500', 'bg-red-50/70');
+          inputEl.setAttribute('aria-invalid', 'false');
+        }
+        if (errorEl) errorEl.textContent = '';
+      });
       hideBanner();
+      resultStatus.textContent = 'Siap';
     }, 10);
   });
 
-  // Tombol Contoh Data
+  // Contoh Data
   sampleBtn.addEventListener('click', () => {
-    productNameInput.value = 'Kopi Arabika Gayo 250g';
+    productNameInput.value = 'Kopi Susu Aren 250ml';
     productCategoryInput.value = 'Minuman';
-    productPriceInput.value = '$12.50';
-    productDescInput.value = 'Biji kopi pilihan dari dataran tinggi Aceh dengan aroma floral khas dan proses sangrai medium.';
+    productPriceInput.value = '25000';
+    templateSelect.value = 'promo';
+    productDescInput.value = 'Racikan biji kopi arabika pilihan berpadu dengan susu segar murni dan gula aren organik khas nusantara.';
 
-    setFieldError(productNameInput, nameError, '');
-    setFieldError(productCategoryInput, categoryError, '');
-    setFieldError(productDescInput, descError, '');
-
+    Object.keys(rules).forEach((id) => validateField(id));
     processForm();
   });
 
   /**
-   * Cek apakah ada produk yang dikirim dari katalog (sessionStorage)
+   * Cek Transfer Data Produk dari Katalog (sessionStorage)
    */
   function loadSelectedProduct() {
     const dataString = sessionStorage.getItem('selected_product');
@@ -224,7 +367,6 @@ document.addEventListener('DOMContentLoaded', () => {
       const product = JSON.parse(dataString);
       if (!product || !product.title) return;
 
-      // Tampilkan box produk terpilih
       selectedProductBox.classList.remove('hidden');
       selectedThumb.src = product.thumbnail || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=500&q=80';
       selectedTitle.textContent = product.title;
@@ -238,9 +380,13 @@ document.addEventListener('DOMContentLoaded', () => {
       productNameInput.value = product.title;
       productCategoryInput.value = (product.category || 'Umum').toUpperCase();
       productPriceInput.value = `$${finalPrice.toFixed(2)}`;
-      productDescInput.value = `${product.description || ''} Brand: ${product.brand || 'Original'}. Stok tersedia: ${product.stock || 10} unit.`;
+      templateSelect.value = 'promo';
+      productDescInput.value = `${product.description || ''} Brand: ${product.brand || 'Original'}. Stok: ${product.stock || 10} unit.`;
 
-      // Langsung proses hasilnya agar pengguna langsung melihat captionnya
+      // Hapus status error sebelum validasi
+      Object.keys(rules).forEach((id) => validateField(id));
+
+      // Langsung proses hasilnya
       processForm();
 
       showBanner(`Data produk "${product.title}" berhasil dimuat dari katalog.`, true);
@@ -250,16 +396,16 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // Tombol Hapus Pilihan
+  // Hapus Pilihan
   clearSelectedBtn.addEventListener('click', () => {
     sessionStorage.removeItem('selected_product');
     selectedProductBox.classList.add('hidden');
     captionForm.reset();
     emptyResult.classList.remove('hidden');
     resultBox.classList.add('hidden');
-    showBanner('Pilihan produk dihapus. Anda dapat mengisi form secara manual.', true);
+    resultStatus.textContent = 'Siap';
+    showBanner('Pilihan produk dibersihkan. Anda dapat mengisi form secara mandiri.', true);
   });
 
-  // Periksa data produk saat halaman dimuat
   loadSelectedProduct();
 });

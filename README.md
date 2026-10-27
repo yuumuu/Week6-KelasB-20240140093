@@ -20,7 +20,7 @@
 
 ## 📌 Deskripsi Project
 
-Project ini dibangun untuk memenuhi ketentuan tugas **PPAW Week 6**, yaitu membangun aplikasi web interaktif yang bersih, responsif, dan rapi menggunakan **Tailwind CSS** dengan estetika modern *macOS-inspired rounded cards* (`rounded-3xl`, `rounded-2xl`, segmented capsule navbar) dan aksen warna **Indigo**:
+Project ini dibangun untuk memenuhi ketentuan tugas **PPAW Week 6**, yaitu membangun aplikasi web interaktif yang **Mobile-First**, bersih, responsif, dan rapi menggunakan **Tailwind CSS** dengan estetika modern *macOS-inspired rounded cards* (`rounded-3xl`, `rounded-2xl`, segmented capsule navbar) dan aksen warna **Indigo**:
 
 1. **Katalog Produk (`index.html`)**:
    - Mengambil data produk dari endpoint publik [DummyJSON](https://dummyjson.com/products) menggunakan **Fetch API** asinkronus (`async/await`).
@@ -30,11 +30,16 @@ Project ini dibangun untuk memenuhi ketentuan tugas **PPAW Week 6**, yaitu memba
    - **Fitur Transfer Data Produk**: Setiap kartu produk dapat diklik untuk otomatis memilih produk dan berpindah ke halaman form caption generator.
 
 2. **Caption Generator (`form.html`)**:
-   - Formulir interaktif untuk membuat teks caption produk.
-   - Menggunakan **DOM Manipulation** dan **Event Handling** (`submit`, `input`, `reset`, `click`).
-   - **Auto-Populate Data**: Otomatis mendeteksi produk yang dipilih dari katalog, menampilkan kartu ringkasan produk terpilih, dan mengisi field formulir (Nama Produk, Kategori, Harga, dan Deskripsi).
-   - Validasi input sederhana (nama minimal 3 karakter, kategori wajib, deskripsi minimal 10 karakter).
-   - Menghasilkan teks caption yang rapi dan menyediakan tombol untuk menyalin teks ke *clipboard*.
+   - Formulir interaktif untuk membuat teks caption produk dengan pendekatan **Mobile-First**.
+   - Menggunakan **DOM Manipulation** dan **Event Handling** (`submit`, `input`, `blur`, `change`, `reset`, `click`).
+   - **Pilihan Template Caption**: Mendukung 3 gaya template (mengadopsi referensi PAW-ANTARA-WEEK5):
+     - **Promo**: Penawaran spesial, diskon, dan urgensi stok terbatas.
+     - **Santai**: Gaya kasual, akrab, dan ramah untuk kebutuhan harian.
+     - **Formal**: Gaya resmi, profesional, dan berorientasi kualitas/standar mutu.
+   - **Generator Hashtag Otomatis**: Otomatis mengonversi nama dan kategori produk menjadi tagar PascalCase (contoh: `#KopiSusuAren`).
+   - **Auto-Populate Data**: Otomatis mendeteksi produk yang dipilih dari katalog, menampilkan kartu ringkasan produk terpilih, dan mengisi seluruh field formulir.
+   - **Validasi Terstruktur Real-Time**: Pesan error muncul langsung di bawah input saat pengguna mengetik dan mengatur atribut `aria-invalid`.
+   - Tombol penyalinan ke *clipboard* dengan notifikasi responsif.
 
 ---
 

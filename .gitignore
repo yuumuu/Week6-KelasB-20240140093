@@ -1,0 +1,13 @@
+# Node / Dependencies
+node_modules/
+
+# OS Files
+.DS_Store
+Thumbs.db
+
+# IDE & Editor files
+.vscode/
+.idea/
+
+# Testing artifacts
+.playwright-mcp/

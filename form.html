@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Caption Generator — PAW Week 6</title>
+  
+  <!-- Favicon -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22><rect width=%2232%22 height=%2232%22 rx=%2210%22 fill=%22%234f46e5%22/><text x=%2216%22 y=%2221%22 font-family=%22sans-serif%22 font-size=%2212%22 font-weight=%22bold%22 fill=%22white%22 text-anchor=%22middle%22>P</text></svg>">
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'system-ui', '-apple-system', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  
+  <!-- Font: Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="bg-zinc-50/80 text-zinc-900 min-h-screen flex flex-col font-sans">
+
+  <!-- Navbar -->
+  <header class="bg-white/80 backdrop-blur-md border-b border-zinc-200/80 sticky top-0 z-30">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+      <a href="index.html" class="font-bold text-sm sm:text-base text-zinc-900 tracking-tight">
+        Haidar Yahya Mudhofar <span class="text-xs font-normal text-zinc-500 ml-1">(20240140093 - Kelas B)</span>
+      </a>
+      <nav class="flex items-center gap-1 p-1 bg-zinc-200/60 rounded-full">
+        <a href="index.html" class="text-xs sm:text-sm font-medium px-4 py-1.5 rounded-full text-zinc-600 hover:text-zinc-900 hover:bg-white/70 transition">
+          Katalog Produk
+        </a>
+        <a href="form.html" class="text-xs sm:text-sm font-medium px-4 py-1.5 rounded-full bg-indigo-600 text-white shadow-sm transition">
+          Caption Generator
+        </a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Konten Utama -->
+  <main class="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 py-8">
+    
+    <!-- Judul Halaman -->
+    <div class="mb-6">
+      <h1 class="text-xl sm:text-2xl font-bold text-zinc-900">Caption Generator</h1>
+      <p class="text-sm text-zinc-600 mt-1">
+        Formulir interaktif untuk membuat caption produk menggunakan manipulasi DOM dan Event Handling.
+      </p>
+    </div>
+
+    <!-- Kotak Notifikasi Produk Terpilih dari Katalog -->
+    <div id="selected-product-box" class="hidden mb-6 p-4 sm:p-5 bg-white border border-zinc-200/80 rounded-3xl shadow-sm">
+      <div class="flex items-center justify-between gap-3">
+        <div class="flex items-center gap-3.5">
+          <div class="w-14 h-14 bg-zinc-50 rounded-2xl border border-zinc-200 overflow-hidden flex items-center justify-center flex-shrink-0">
+            <img id="selected-thumb" src="" alt="Thumbnail" class="w-full h-full object-contain p-1">
+          </div>
+          <div>
+            <div class="flex items-center gap-2 mb-0.5">
+              <span class="text-[11px] font-semibold bg-indigo-50 text-indigo-700 px-2.5 py-0.5 rounded-full">Produk Terpilih</span>
+              <span id="selected-category" class="text-xs text-zinc-500"></span>
+            </div>
+            <h3 id="selected-title" class="text-sm font-semibold text-zinc-900"></h3>
+            <p id="selected-price" class="text-xs text-zinc-600"></p>
+          </div>
+        </div>
+        <button 
+          type="button" 
+          id="clear-selected-btn"
+          class="text-xs text-zinc-500 hover:text-red-600 transition px-2 py-1"
+        >
+          Hapus Pilihan
+        </button>
+      </div>
+    </div>
+
+    <!-- Workspace 2 Kolom -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+      
+      <!-- Kolom Formulir (Span 7) -->
+      <section class="lg:col-span-7 bg-white border border-zinc-200/80 rounded-3xl p-5 sm:p-6 shadow-sm">
+        <div class="flex items-center justify-between pb-3 mb-4 border-b border-zinc-100">
+          <h2 class="text-sm font-semibold text-zinc-800">Detail Konten</h2>
+          <button 
+            type="button" 
+            id="sample-btn"
+            class="text-xs font-medium text-zinc-600 bg-zinc-100 hover:bg-zinc-200 px-3 py-1.5 rounded-xl transition active:scale-98"
+          >
+            Contoh Data
+          </button>
+        </div>
+
+        <!-- Feedback Alert -->
+        <div id="form-feedback" class="hidden mb-4 p-3.5 rounded-2xl text-xs font-medium" role="alert"></div>
+
+        <form id="caption-form" novalidate class="space-y-4">
+          <!-- Nama Produk -->
+          <div>
+            <label for="product-name" class="block text-xs font-semibold text-zinc-700 mb-1">
+              Nama Produk <span class="text-red-500">*</span>
+            </label>
+            <input 
+              type="text" 
+              id="product-name" 
+              name="productName" 
+              placeholder="Contoh: Kopi Arabika Gayo 250g" 
+              class="w-full px-4 py-2.5 text-sm bg-zinc-50/70 border border-zinc-300/80 rounded-2xl text-zinc-900 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition"
+              required
+            >
+            <p id="name-error" class="text-xs text-red-600 mt-1 min-h-[16px]"></p>
+          </div>
+
+          <!-- Kategori & Harga -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label for="product-category" class="block text-xs font-semibold text-zinc-700 mb-1">
+                Kategori <span class="text-red-500">*</span>
+              </label>
+              <input 
+                type="text" 
+                id="product-category" 
+                name="productCategory" 
+                placeholder="Contoh: Minuman / Gadget" 
+                class="w-full px-4 py-2.5 text-sm bg-zinc-50/70 border border-zinc-300/80 rounded-2xl text-zinc-900 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition"
+                required
+              >
+              <p id="category-error" class="text-xs text-red-600 mt-1 min-h-[16px]"></p>
+            </div>
+
+            <div>
+              <label for="product-price" class="block text-xs font-semibold text-zinc-700 mb-1">
+                Harga (USD / Rp)
+              </label>
+              <input 
+                type="text" 
+                id="product-price" 
+                name="productPrice" 
+                placeholder="Contoh: $19.99 atau Rp 50.000" 
+                class="w-full px-4 py-2.5 text-sm bg-zinc-50/70 border border-zinc-300/80 rounded-2xl text-zinc-900 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition"
+              >
+            </div>
+          </div>
+
+          <!-- Deskripsi / Keunggulan -->
+          <div>
+            <label for="product-desc" class="block text-xs font-semibold text-zinc-700 mb-1">
+              Deskripsi &amp; Keunggulan Produk <span class="text-red-500">*</span>
+            </label>
+            <textarea 
+              id="product-desc" 
+              name="productDesc" 
+              rows="4" 
+              placeholder="Tuliskan spesifikasi produk, kelebihan, dan keterangan yang ingin disampaikan..." 
+              class="w-full px-4 py-2.5 text-sm bg-zinc-50/70 border border-zinc-300/80 rounded-2xl text-zinc-900 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition resize-y"
+              required
+            ></textarea>
+            <p id="desc-error" class="text-xs text-red-600 mt-1 min-h-[16px]"></p>
+          </div>
+
+          <!-- Tombol Submit & Reset -->
+          <div class="flex items-center gap-3 pt-2">
+            <button 
+              type="submit" 
+              id="submit-btn"
+              class="flex-1 py-2.5 px-4 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-2xl shadow-sm transition active:scale-98 text-center"
+            >
+              Generate Caption
+            </button>
+            <button 
+              type="reset" 
+              id="reset-btn"
+              class="py-2.5 px-4 text-xs font-medium text-zinc-600 bg-zinc-100 hover:bg-zinc-200 rounded-2xl transition active:scale-98"
+            >
+              Reset
+            </button>
+          </div>
+        </form>
+      </section>
+
+      <!-- Kolom Hasil Caption (Span 5) -->
+      <section class="lg:col-span-5 bg-white border border-zinc-200/80 rounded-3xl p-5 sm:p-6 shadow-sm">
+        <div class="flex items-center justify-between pb-3 mb-4 border-b border-zinc-100">
+          <h2 class="text-sm font-semibold text-zinc-800">Hasil Caption</h2>
+          <span id="result-status" class="text-xs text-zinc-400">Siap</span>
+        </div>
+
+        <!-- Empty State -->
+        <div id="empty-result" class="py-12 text-center text-zinc-400">
+          <p class="text-sm">Belum ada caption yang dibuat.</p>
+          <p class="text-xs text-zinc-400 mt-1">Pilih produk di katalog atau isi form di samping.</p>
+        </div>
+
+        <!-- Output Teks -->
+        <div id="result-box" class="hidden space-y-4">
+          <div 
+            id="result-text" 
+            class="p-4 bg-zinc-50/70 border border-zinc-200/80 rounded-2xl text-xs sm:text-sm text-zinc-800 whitespace-pre-wrap leading-relaxed max-h-96 overflow-y-auto"
+          ></div>
+
+          <div class="flex items-center gap-2">
+            <button 
+              type="button" 
+              id="copy-btn" 
+              class="flex-1 py-2.5 px-3 text-xs font-semibold text-indigo-700 bg-indigo-50 hover:bg-indigo-600 hover:text-white rounded-2xl transition-all duration-150 active:scale-98 text-center"
+            >
+              Salin Caption
+            </button>
+            <span id="copy-msg" class="text-xs text-emerald-600 font-medium hidden">Tersalin ke clipboard!</span>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-white border-t border-zinc-200/80 py-6 mt-auto">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 text-center text-xs text-zinc-500">
+      <p>PAW Week 6 &bull; 20240140093 &bull; Haidar Yahya Mudhofar &bull; Kelas B</p>
+    </div>
+  </footer>
+
+  <script src="js/form.js"></script>
+</body>
+</html>

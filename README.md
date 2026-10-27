@@ -47,14 +47,34 @@ Project ini dibangun untuk memenuhi ketentuan tugas **PPAW Week 6**, yaitu memba
 
 ```text
 Week6-KelasB-20240140093/
-├── index.html          # Halaman 1: Katalog Produk (Fetch API & Transfer Produk)
-├── form.html           # Halaman 2: Caption Generator (Form DOM & Auto-Populate)
+├── docs/
+│   └── screenshots/     # Tangkapan layar aplikasi (desktop & mobile)
+│       ├── katalog-desktop.png
+│       ├── caption-desktop.png
+│       ├── katalog-mobile.png
+│       └── caption-mobile.png
+├── index.html           # Halaman 1: Katalog Produk (Fetch API & Transfer Produk)
+├── form.html            # Halaman 2: Caption Generator (Form DOM & Auto-Populate)
 ├── js/
-│   ├── index.js        # Logika Fetch API, filter katalog, & transfer produk
-│   └── form.js         # Logika Form, auto-populate, validasi, & salin teks
-├── .gitignore          # File konfigurasi git ignore
-└── README.md           # Dokumentasi tugas Week 6
+│   ├── index.js         # Logika Fetch API, filter katalog, & transfer produk
+│   └── form.js          # Logika Form, auto-populate, template, & validasi
+├── .gitignore           # File konfigurasi git ignore
+└── README.md            # Dokumentasi tugas Week 6
 ```
+
+---
+
+## 📸 Tangkapan Layar (Screenshots)
+
+### 1. Tampilan Desktop
+| Halaman 1: Katalog Produk (`index.html`) | Halaman 2: Caption Generator (`form.html`) |
+| :---: | :---: |
+| ![Katalog Desktop](docs/screenshots/katalog-desktop.png) | ![Caption Generator Desktop](docs/screenshots/caption-desktop.png) |
+
+### 2. Tampilan Mobile (Mobile-First)
+| Katalog Produk (Mobile) | Caption Generator (Mobile) |
+| :---: | :---: |
+| <img src="docs/screenshots/katalog-mobile.png" width="320" alt="Katalog Mobile"> | <img src="docs/screenshots/caption-mobile.png" width="320" alt="Caption Mobile"> |
 
 ---
 
@@ -68,5 +88,8 @@ Week6-KelasB-20240140093/
    - Klik salah satu kartu produk (misalnya *"Essence Mascara Lash Princess"*).
    - Halaman otomatis berpindah ke `form.html`.
    - Box produk terpilih langsung muncul, formulir terisi otomatis, dan hasil teks caption langsung ditampilkan.
-4. **Uji Salin Teks**:
+4. **Uji Pilihan Template**:
+   - Ubah pilihan template antara **Promo**, **Santai**, atau **Formal**.
+   - Perhatikan teks caption dan tagar yang otomatis diperbarui secara instan.
+5. **Uji Salin Teks**:
    - Klik tombol **"Salin Caption"** untuk menyalin hasil teks caption ke clipboard.
